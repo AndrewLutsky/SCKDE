@@ -5,17 +5,10 @@ import pandas as pd
 import seaborn as sb
 import numpy as np
 
-def _sckde_single(adata: AnnData, key:str) -> gaussian_kde:
-    """
+def _sckde_uni(adata: AnnData, key:str) -> list[f64]:
+    """ Function to generate gaussian kde from cells by gene expression matrix,
+    and a list of relevant genes to query the anndata """
     
-    Parameters
-    ----------
-    Adata : AnnData
-        
-        
-    
-    """
-    # TODO
     return None
 
 def _sckde_multi(adata:AnnData, keys:list[str]):#-> gaussian_kde:
@@ -57,7 +50,8 @@ def _sckde_multi(adata:AnnData, keys:list[str]):#-> gaussian_kde:
         print(np.sum(kde(um)))
 
     # Now let us find the joint distribution over all the keys.
-    return np.prod(list(density_map.values())) 
+    prod = np.prod(list(density_map.values()), axis = 0)
+    return(prod)
 
     if len(keys) == 0:
         "Given keys is empty, utilizing umap-coordinate density!"
