@@ -1,0 +1,9 @@
+numpy>=2.3.5
+scanpy>=1.11.5
+scipy>=1.17.0
+seaborn>=0.13.2
+
+[dev]
+ruff
+black
+pytest
