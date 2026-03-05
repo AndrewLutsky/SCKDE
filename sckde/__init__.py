@@ -9,5 +9,7 @@ that can be attached to the observations.
 """
 
 # Import and make available sckde
-import sckde
-import plotting
+from .sckde import sckde
+from .utils import nebulosa_wkde2d
+from . import plotting as pl
+from . import exceptions as execeptions

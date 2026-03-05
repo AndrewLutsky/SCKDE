@@ -7,10 +7,16 @@ gaussian kernel density estimate.
 from scipy.stats import gaussian_kde
 from anndata import AnnData
 import numpy as np
+from typing import Union
 
 
+# TODO
 def sckde(
-    adata: AnnData, keys, basis="X_umap", dimensions_embedding=2, scale=True
+    adata: AnnData,
+    keys: Union[str, list[str]],
+    basis="X_umap",
+    dimensions_embedding=2,
+    scale=True,
 ):
     """
     Function to generate gaussian kde from cells by gene expression matrix,
@@ -20,18 +26,16 @@ def sckde(
     """
     if isinstance(keys, str):
         keys = [keys]
-    elif isinstance(keys, list[str]):
+    elif isinstance(keys, list):
         pass
     else:
         raise ValueError("Keys must be a string or a list of strings!")
-
 
     # Check for keys in the adata
     for key in keys:
         if key not in adata.var.index:
             raise KeysNotFound(key)
 
-    
     adata = adata[:, keys].copy()
 
     # Check for umap key in obsm
@@ -40,15 +44,18 @@ def sckde(
     # Grab the first two UMAP axes
     um = adata.obsm[basis][:, 0:dimensions_embedding]
 
+    # Compute a n dimensional grid over the embedding space
+
     kdes = []
     for key in keys:
         norm_const = np.sum(adata[:, key].X)
         if norm_const == 0.0:
             norm_const = 1
-        X = adata[:, key].X / norm_const
+        X = adata[:, key].X.todense() / norm_const
+
         weights = np.asarray(X).reshape(-1)
-        weights = weights.astype(float)
         print(weights)
+        print(weights, um.T)
         kdes.append(gaussian_kde(um.T, weights=weights))
 
     # Grab the UMAP coordinates
@@ -84,14 +91,3 @@ def sckde_trajectory(adata: AnnData, keys: list[str], trajectory_basis="trajecto
 
     """
     return sckde(adata, keys, basis=trajectory_basis, dimensions_embedding=1)
-
-
-# Error Class
-class KeysNotFound(Exception):
-    """
-    An Exception thrown if specific keys are not available
-    in the given AnnData layer.
-    """
-
-    def __init__(self, key: str):
-        super().__init__(f"{key} not found in the anndata!")

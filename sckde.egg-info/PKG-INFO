@@ -4,7 +4,9 @@ Version: 0.1.0
 Summary: Add your description here
 Requires-Python: >=3.12
 Description-Content-Type: text/markdown
+Requires-Dist: kdepy>=1.1.12
 Requires-Dist: numpy>=2.3.5
+Requires-Dist: pytest>=9.0.2
 Requires-Dist: scanpy>=1.11.5
 Requires-Dist: scipy>=1.17.0
 Requires-Dist: seaborn>=0.13.2
@@ -12,3 +14,5 @@ Provides-Extra: dev
 Requires-Dist: ruff; extra == "dev"
 Requires-Dist: black; extra == "dev"
 Requires-Dist: pytest; extra == "dev"
+Provides-Extra: r
+Requires-Dist: rpy2>=3.6.5; extra == "r"

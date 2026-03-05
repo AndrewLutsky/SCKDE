@@ -2,6 +2,7 @@ README.md
 pyproject.toml
 src/__init__.py
 src/sckde.py
+src/utils.py
 src/plotting/__init__.py
 src/plotting/plotting.py
 src/sckde.egg-info/PKG-INFO
