@@ -13,3 +13,8 @@ from .sckde import sckde
 from .utils import nebulosa_wkde2d
 from . import plotting as pl
 from . import exceptions as execeptions
+
+__version__ == "0.1.0"
+__author__ == "Andrew Lutsky"
+
+

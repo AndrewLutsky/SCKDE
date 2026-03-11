@@ -78,3 +78,26 @@ class InvalidBandwidthArray(Exception):
     def __init__(self, message):
         super().__init__(message)
 
+class TooManyDimensions(Exception):
+    """
+    An Exception thrown if the data has too 
+    many dimensions as input in the embedding
+    space.
+
+    Parameters
+    ----------
+    message : str
+        A message that states that there are too
+        many dimensions for a given input.
+    Returns
+    -------
+
+    None
+
+    Example
+    -------
+    >>> Raise TooManyDimensions("There are too many dimensions!")
+    """
+
+    def __init__(self, message):
+        super().__init__(message)

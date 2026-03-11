@@ -5,23 +5,41 @@ gaussian kernel density estimate.
 """
 
 from scipy.stats import gaussian_kde
+from KDEpy import FFTKDE
 from anndata import AnnData
 import numpy as np
 from typing import Union
+from sckde.utils import _todo
+from sckde.exceptions import TooManyDimensions
+import logging
 
-
-# TODO
-def sckde(
-    adata: AnnData,
-    keys: Union[str, list[str]],
-    basis="X_umap",
-    dimensions_embedding=2,
-    scale=True,
-):
+def sckde(adata: AnnData,
+          keys: Union[str, list[str]],
+          basis="X_umap",
+          dimensions_embedding=2,
+          scale=True
+          ):
     """
-    Function to generate gaussian kde from cells by gene expression matrix,
-    and a list of relevant genes to query the anndata.
+    This function applies the sckde function onto the adata using specific 
+    adata keys. Essentially it weights the umap coordinates according to 
+    specific genes.
 
+    Parameters
+    ----------
+    basis : 
+        
+    dimensions_embedding : 
+        
+    scale : 
+        
+    adata : AnnData
+        
+    keys : Union[str, list[str]]
+        
+
+    Returns
+    -------
+    None     
 
     """
     if isinstance(keys, str):
@@ -41,53 +59,110 @@ def sckde(
     # Check for umap key in obsm
     if basis not in adata.obsm:
         raise KeysNotFound(basis)
-    # Grab the first two UMAP axes
+    # Grab the first n dimension UMAP axes
     um = adata.obsm[basis][:, 0:dimensions_embedding]
 
     # Compute a n dimensional grid over the embedding space
 
-    kdes = []
+    kdes = {}
     for key in keys:
-        norm_const = np.sum(adata[:, key].X)
-        if norm_const == 0.0:
-            norm_const = 1
-        X = adata[:, key].X.todense() / norm_const
+        axes, z = wkde_fft(um, adata[:, key])
+        density = get_density(um, axes, z)
+        kdes[key] = density
 
-        weights = np.asarray(X).reshape(-1)
-        print(weights)
-        print(weights, um.T)
-        kdes.append(gaussian_kde(um.T, weights=weights))
+    # Find product of all keys.
+    prod = np.ones(len(adata))
 
-    # Grab the UMAP coordinates
-    um = adata.obsm[basis][:, 0:dimensions_embedding].T
-
-    if len(keys) == 0:
-        print("Given keys is empty, utilizing umap-coordinate density!")
-        return gaussian_kde(um.T)
-    # Instantiate a density dictionary mapping key to a density
-    # distribution.
-    density_map = {}
-
-    # Calculate the density for each key
-    for kde, key in zip(kdes, keys):
-        density_map[key] = kde(um)
-
-    # Now let us find the joint distribution over all the keys.
-    prod = np.prod(list(density_map.values()), axis=0)
-
-    # Now let us scale the values to sum to 1.
-    if scale:
-        prod /= np.sum(prod)
-
+    for key,val in kdes.items():
+        prod *= val
+        
     return prod
 
-
-def sckde_trajectory(adata: AnnData, keys: list[str], trajectory_basis="trajectory"):
+def wkde_fft(data:np.ndarray, w:np.ndarray, n:int=1000) -> np.ndarray:
     """
-    This is a wrapper function around sckde, specifically
-    for computing the weighted gaussian kde along the
-    pseudotime path.
+    This calculates the weighted kde
+    given a numpy array (that is either one
+    or two dimensional and a weight array.
+    
+    Parameters
+    ----------
+    data : np.ndarray
 
+    w : np.ndarray
+
+    n : int = 100
+
+    bw : str = 'ISJ'
+
+    Returns:
+    np.ndarray
 
     """
-    return sckde(adata, keys, basis=trajectory_basis, dimensions_embedding=1)
+
+
+    # Coerce data and w to be numpy arrays.
+    if not isinstance(data, np.ndarray):
+        data = np.ndarray(data)
+
+    if not isinstance(w, np.ndarray):
+        w = w.X.todense().flatten()
+        print(w)
+        w = np.array(w)
+
+    # Ensure that data is either one or two dimensions
+    if len(data.shape) > 2:
+        raise TooManyDimensions("There are too many dimesions!")
+
+    n_dims = len(data.shape)
+
+    # Normalize weights to match Nebulosa
+    w = w / w.sum() * len(w)
+
+    # Fit weighted FFT KDE
+    kde = FFTKDE(kernel="gaussian")
+    grid, z = kde.fit(data, weights=w).evaluate(n)
+   
+    # Extract out unique grid values per axis
+    axes = [np.unique(grid[:, i]) for i in range(n_dims)]
+
+    # Reshape grid  = depending on dimension
+    if n_dims < 2:
+        z = z.reshape(n)
+    else:
+        z = z.reshape(n, n)
+     
+    return axes, z
+
+def get_density(data:np.ndarray, axes:np.ndarray, z:np.ndarray) -> np.ndarray:
+    """
+    Function to extract out density from the results of wkde_fft.
+
+    Parameters
+    ----------
+    data : np.ndarray
+        Data
+
+    axes : np.ndarray
+        Axes output from wkde_fft.
+
+    z : np.ndarray
+        Z output from wkde_fft.
+    
+    Returns
+    -------
+    np.ndarray
+        Returns a numpy array that is of dimension (n_points, ). 
+        This returns the density value per point given the results of
+        wkde_fft.
+
+    """
+    ndim = len(axes)
+    
+    idxs = []
+    for dim in range(ndim):
+        indices = (np.searchsorted(axes[dim], data[:, dim], side="right") - 1)
+        indices = np.clip(indices, 0, len(axes[dim]) - 1)
+        idxs.append(indices)
+    
+    return z[tuple(idxs)]
+

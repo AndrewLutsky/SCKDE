@@ -3,12 +3,7 @@ from KDEpy import FFTKDE
 from sckde.exceptions import UnequalArrayLength, InvalidBandwidthArray
 from scipy.stats import norm
 from collections.abc import Iterable
-
-
-def make_embedding_grid(embedding, points):
-    """Creates a grid of embedding points"""
-    return
-
+import functools
 
 def nebulosa_wkde2d(x, y, w, h=None, n=100):
     """
@@ -164,3 +159,21 @@ def nebulosa_get_density(x, y, x_int, y_int, z) -> np.array:
     print(type(x_int), type(y_int))
     return z[x_idx, y_idx]
 
+def _todo(func):
+    """
+    Wrapper/decorator for todos.
+    Parameters
+    ----------
+    func : function
+        
+
+    Returns
+    -------
+    Nothing
+        
+    """
+
+    @functools.wraps(func)
+    def wrapper(*args, **kwargs):
+        raise NotImplementedError(f"{func.__name__} is not yet implemented.")
+    return wrapper
