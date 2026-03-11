@@ -15,6 +15,7 @@ Requires-Dist: ruff; extra == "dev"
 Requires-Dist: black; extra == "dev"
 Requires-Dist: pytest; extra == "dev"
 Requires-Dist: sphinx>=9.1.0; extra == "dev"
+Requires-Dist: sphinx-rtd-theme>=3.1.0; extra == "dev"
 
 
 # Installation

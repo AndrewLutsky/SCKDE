@@ -1,6 +1,6 @@
 README.md
 pyproject.toml
-docs/conf.py
+docs/source/conf.py
 sckde/__init__.py
 sckde/sckde.py
 sckde/utils.py
