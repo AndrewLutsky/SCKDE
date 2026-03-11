@@ -1,5 +1,6 @@
 README.md
 pyproject.toml
+docs/conf.py
 sckde/__init__.py
 sckde/sckde.py
 sckde/utils.py
@@ -13,3 +14,5 @@ sckde/exceptions/exceptions.py
 sckde/plotting/__init__.py
 sckde/plotting/plotting.py
 tests/integration_tests/test_nebulosa.py
+tests/unit_tests/test_get_density.py
+tests/unit_tests/test_wkde_fft.py

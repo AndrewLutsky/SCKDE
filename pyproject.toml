@@ -18,6 +18,7 @@ dev = [
     "ruff",
     "black",
     "pytest",
+    "sphinx>=9.1.0",
 ]
 
 
